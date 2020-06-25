@@ -148,7 +148,7 @@ Note :
 . The table in general doesn’t distinguish between I (32-register) and E (16-register) variants.
 . *Zfinx* in general is orthogonal to RV32E/RV32I
 . *Zfinx* will be usable with RV64E in the future if it is standardized
-. RV32EFD may be a forbidden combination as the stack is 32-bit aligned for RV32E. *Zfinx* doesn’t affect this, if it is supported inthe main RISCV specification then it can be used with *Zfinx*. See https://github.com/riscv/riscv-elf-psabi-doc/blob/master/riscv-elf.md[the ABI document]
+. RV32EFD may be a forbidden combination as the stack is 32-bit aligned for RV32E. *Zfinx* doesn’t affect this, if it is supported in the main RISCV specification then it can be used with *Zfinx*. See https://github.com/riscv/riscv-elf-psabi-doc/blob/master/riscv-elf.md[the ABI document]
 . Any floating point support implies F support
 . RV32IFD [Zfh] Zfinx is *significantly* more complex than the other cases, as it requires register pairs but provides double precision floating point in a low area core, and frees up the [C.]FLD/[C.]FSD encodings.
 
@@ -187,7 +187,7 @@ The ABI when using *Zfinx* is the standard integer calling convention as listed 
 
 The *Zfinx* ABI can be thought of as being similar to using the softfloat routines to execute floating point functionality, but replacing the call to the softfloat function with the actual floating point ISA instruction.
 
-Note that RV32D *Zfinx* requires register pair handling. This does not require an ABI change as long types are already supported using reigster pairs. It is likely to require some work in the compiler (according to Jim Wilson).
+Note that RV32D *Zfinx* requires register pair handling. This does not require an ABI change as long types are already supported using register pairs. It is likely to require some work in the compiler (according to Jim Wilson).
 
 
 [[mstatus.fs]]
