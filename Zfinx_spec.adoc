@@ -36,7 +36,7 @@ In principle *Zfinx* shares the integer registers with the floating point regist
 
 *Floating Point Configuration*
 
-Not all of these details belong in this specification, but this has proved to be a useful place to work out a configuration strategy for floating point support. There is a requirement to reduce the area overhead of FPU hardware by making the F[N]MADD.\*, F[N]MSUB.* and FDIV.\*, FSQRT.* instructions optional in hardware. This then gives the a choice of implementing them in software instead by
+Not all of these details belong in this specification, but this has proved to be a useful place to work out a configuration strategy for floating point support. There is a requirement to reduce the area overhead of FPU hardware by making the F[N]MADD.\*, F[N]MSUB.* and FDIV.\*, FSQRT.* instructions optional in hardware. This then gives the choice of implementing them in software instead by
 
 . Taking an illegal instruction trap, and calling the required software routine in the trap handler. This requires that the opcodes are not reallocated. This gives binary compatibility between cores with/without hardware support for F[N]MADD.\*, F[N]MSUB.* and FDIV.\*, FSQRT.*, but is lower performance than option 2 above
 
