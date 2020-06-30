@@ -66,7 +66,7 @@ To achieve this we break all current and future floating point extensions into t
 
 So the *Zfma*, *Zfdiv*, *Zfinx* options apply to all floating point extensions, including future ones. This keeps the support regular across the different options.
 
-Therefore *RV32FD Zfh Zfinx* can be expressed as:
+Therefore *RV32FD Zfh Zfinx* can also be expressed as:
 
 *rv32_Zfhbase_Zffbase_Zfdbase_Zfma_Zfdiv_Zfinx*
 
@@ -87,6 +87,11 @@ A non-*Zfinx* core can run a *Zfinx* binary. M-mode software can do this:
 . set **mstatus.fs**=0
 . mret
 
+There are corner cases around the use of x0 and register pairs for RV32D
+. two 32-bit X registers must be transferred to a single 64-bit F register to set up the source operands. This must be done by saving each X register to consecutive memory locations, and using a 64-bit floating point load (FLD or C.FLD) to load the data
+. one 64-bit F register must be transferred to two 32-bit X-registers to receive the result. This must be done with a 64-bit floating point store (FSD or C.FSD) and then two 32-bit loads (such as LW or C.LW).
+. if the source register pair is {x1,x0}, the source data will read as all zeroes. Therefore f0 must be loaded with a 64-bit zero constant from memory.
+. if the destination register pair is {x1,x0} then the full output is discarded, do not transfer the resulting data to the {x1,x0} register pair which would result in the upper half being written to x1
 
 A *Zfinx* core cannot trap on floating point instructions by setting **mstatus.fs**=0, so the reverse emulation isn’t possible. The code must be recompiled (or ported for assembler).
 
@@ -221,7 +226,7 @@ All D-extension instructions which are implemented with *Zfinx* will access regi
 
 The P-extension already specifies register pair handling as part of the *Zp64* extension, this specification will be consistent.
 
-Big endian mode is enabled if **mstatus.MBE**=1.
+Big endian mode is enabled in M-mode if **mstatus.MBE**=1, in S-mode if **mstatus.SBE**=1, or in U-mode if **mstatus.UBE**=1
 
 The register pairs are only used by the floating point arithmetic instructions. Load/store continues to be 32-bit only for this configuration.
 
@@ -243,7 +248,12 @@ In the case of RV32D *Zfinx*, register pairs are used. See above for x0 handling
 [[nan-boxing]]
 = NaN-boxing
 
-NaN-boxing is used when a floating point value is written which is smaller than the width of the target register. For example, writing a half-precision value into a 32-bit register (RV32F Zfh) or writing a 32-bit value into a 64-bit register (RV64F). All upper bits are written with 1s. Therefore if the register is read by a floating point instruction which reads a value wider than the one which wrote the result, the value is interpreted as a NaN to indicate that an error has occurred.
+NaN-boxing is used when a floating point value is written which is smaller than the width of the target register. For example, writing a half-precision value into a 32-bit register (RV32F Zfh) or writing a 32-bit value into a 64-bit register (*RV64F*). All upper bits are written with 1s. Therefore if the register is read by a floating point instruction which reads a value wider than the one which wrote the result, the value is interpreted as a NaN to indicate that an error has occurred.
+
+NaN boxing is useful in cases where it is unknown whether floating point data will be interpreted as the full width of the register, or as a shorter value. For example for RV32F Zfh *Zfinx* when a half-precision value is passed as a function argument, 
+the callee may not know if it is to be interpreted as a 32-bit or 16-bit value. 
+Therefore if the callee misinterprets the value as 32-bit then the 
+NaN-boxing ensures that the value is interpreted as a NaN, so the software should detect this and return an error.
 
 For *Zfinx* the NaN-boxing is limited to *XLEN* bits, not *FLEN* bits. Therefore a FADD.S executed on a RV32D core will write a 64-bit value (the MSH will be all 1’s). On a RV32D Zfinx core it will write a 32-bit register, i.e. a single X register only. This means there is semantic difference between these code sequences:
 
@@ -259,7 +269,8 @@ For *Zfinx* the NaN-boxing is limited to *XLEN* bits, not *FLEN* bits. Therefore
 
 NaN-boxing is supported by *Zfinx* implementations, for compatibility with the RISC-V base ISA standard and the RISC-V Vector extension.
 
-NaN-boxing is only used by floating point instructions. Narrow floating point loads are not supported on *Zfinx* cores. For example FLH is not supported, which would require NaN-boxing the result to *XLEN* bits.
+NaN-boxing is only used by floating point instructions. Narrow floating point loads are not supported on *Zfinx* cores. 
+For example FLH is not supported, which would require NaN-boxing the result to *XLEN* bits.
 
 The table shows the effect of writing each possible width of value to the register file for all supported combinations. Note that Verilog syntax is used in the final column.
 
@@ -316,36 +327,76 @@ Additionally many instructions are deleted for *Zfinx*, e.g. FLW and C.FLW for R
 
 We considered allowing pseudo-instructions for the deleted instructions for easier code porting. For example allowing FLW to be a pseudo-instruction for LW, but decided not to. Because the register specifiers must change to integer registers, it makes sense to also remove the use of FLW etc. In this way the user is forced to rewrite their code for a *Zfinx* core, reducing the chance of undiscovered porting bugs. this only affects assembly code, high level language code is unaffected as the compiler will target the correct architecture.
 
-[[rv32f-zfinx-specification]]
-= RV32F Zfinx Specification
+[[replaced-instructions]]
+= Replaced Instructions
 
-This is the simplest case to specify, because the integer and floating point data types are the same width. This section covers both RV32EF and RV32IF.
+All floating point loads, stores and floating point to integer moves are removed on a *Zfinx* core, so all of the encodings become available.
 
-[[heading]]
-= RV32F vs RV32F Zfinx ISA
+The following three tables give suggested replacement instructions for deleted instructions.
 
 [cols="",options="header",]
-|=====================================================================
-|*RV32F instruction* |*RV32F Zfinx equivalent*
-2+|*load/store*
-|FLW frd, offset(xrs1) |reserved 32-bit encoding, replaced by LW
-|C.FLW frd’, offset(xrs1’) |reserved 16-bit encoding, replaced by C.LW
-|C.FLWSP frd, uimm(x2) |reserved 16-bit encoding, replaced by C.LWSP
-|FSW frs2, offset(xrs1) |reserved 32-bit encoding, replaced by SW
-|C.FSW frs2’, offset(xrs1’) |reserved 16-bit encoding, replaced by C.SW
-|C.FSWSP frd, uimm(x2) |reserved 16-bit encoding, replaced by C.SWSP
-2+|*moves*
-|FMV.X.W xrd, frs1 |reserved 32-bit encoding, replaced by MV
-|FMV.W.X frd, xrs1 |reserved 32-bit encoding, replaced by MV
-|=====================================================================
+|=========================================================================================================================
+|*Instruction* |*RV32F Zfh Zfinx*|*RV32D Zfh Zfinx*|*RV64F Zfh Zfinx*|*RV64D Zfh Zfinx*|*RV32F Zfinx*|*RV32D Zfinx*|*RV64F Zfinx*|*RV64D Zfinx*
 
-Therefore 8 opcodes become available for other uses, because the integer and floating point versions become equivalent. The reserved opcodes will be used by future standard extensions.
+|*loads* 8+|*suggested replacement instructions*
 
-All other F extension instructions are retained, and execute as specified except that
+|FLD **f**rd, offset(xrs1) |_reserved_|LW,LW 2+|LD |_reserved_|LW, LW 2+|LD
+|FLW **f**rd, offset(xrs1) 2+|LW 2+|LW[U] and NaN-box in software 2+|LW 2+|LW[U] and NaN-box in software
+|FLH **f**rd, offset(xrs1) 4+|LH[U] and NaN-box in software 4+| _reserved_
+
+|C.FLD **f**rd’, offset(xrs1’) |_reserved_|[C.]LW,[C.]LW 2+|[C.]LD |_reserved_|[C.]LW,[C.]LW 2+|[C.]LD
+|C.FLDSP **f**rd, uimm(x2) |_reserved_|C.LWSP,C.LWSP 2+|C.LDSP |_reserved_|C.LWSP,C.LWSP 2+|C.LDSP
+
+|C.FLW **f**rd, offset(xrs1) 2+|C.LW 2+|C.LW and NaN-box in software 2+|C.LW 2+|C.LW and NaN-box in software
+|C.FLWSP **f**rd, uimm(x2)   2+|C.LWSP 2+|C.LWSP and NaN-box in software 2+|C.LWSP 2+|C.LWSP and NaN-box in software
+|=========================================================================================================================
+
+[cols="",options="header",]
+|=========================================================================================================================
+|*Instruction* |*RV32F Zfh Zfinx*|*RV32D Zfh Zfinx*|*RV64F Zfh Zfinx*|*RV64D Zfh Zfinx*|*RV32F Zfinx*|*RV32D Zfinx*|*RV64F Zfinx*|*RV64D Zfinx*
+
+|*stores* 8+|*suggested replacement instructions*
+
+|FSD **f**rd, offset(xrs1) |_reserved_|SW,SW 2+|SD |_reserved_|SW, SW 2+|SD
+|FSW **f**rd, offset(xrs1) 8+|SW 
+|FSH **f**rd, offset(xrs1) 4+|SH 4+|_reserved_
+
+|C.FSD **f**rd’, offset(xrs1’) |_reserved_|[C.]SW,[C.]SW 2+|[C.]SD |_reserved_|[C.]SW,[C.]SW 2+|[C.]SD
+|C.FSDSP **f**rd, uimm(x2) |_reserved_|C.SWSP,C.SWSP 2+|C.SDSP |_reserved_|C.SWSP,C.SWSP 2+|C.SDSP
+|C.FSW **f**rd, offset(xrs1) 8+|C.SW 
+|C.FSWSP **f**rd, uimm(x2)   8+|C.SWSP
+
+|=========================================================================================================================
+
+
+[cols="",options="header",]
+|=========================================================================================================================
+|*Instruction* |*RV32F Zfh Zfinx*|*RV32D Zfh Zfinx*|*RV64F Zfh Zfinx*|*RV64D Zfh Zfinx*|*RV32F Zfinx*|*RV32D Zfinx*|*RV64F Zfinx*|*RV64D Zfinx*
+
+|*moves* 8+|*suggested replacement instructions*
+
+|FMV.X.D xrd, **f**rs1 |_reserved_| MV,MV | _reserved_ | MV|_reserved_| MV,MV | _reserved_ | MV
+|FMV.D.X **f**rd, xrs1 |_reserved_| MV,MV | _reserved_ | MV|_reserved_| MV,MV | _reserved_ | MV
+
+|FMV.X.W xrd, **f**rs1 2+|MV 2+|MV and sign extend in software 2+|MV 2+|MV and sign extend in software
+|FMV.W.X **f**rd, xrs1 2+|MV 2+|MV and NaN-box in software 2+|MV 2+|MV and NaN-box in software
+
+|FMV.X.H xrd, **f**rs1 4+|MV and sign extend in software 4+| _reserved_
+|FMV.H.X **f**rd, xrs1 4+|MV and NaN-box in software 4+| _reserved_
+
+|=========================================================================================================================
+
+Therefore up to 7 load encodings, up to 7 store encodings and up to 6 move encodings become available for reuse, they will be allocated by future standard extensions.
+
+. where a floating point load loads fewer than XLEN bits then software NaN-boxing in software is required to get the same semantics
+. where a floating point move moves fewer than XLEN bits then either sign extension (if the target is an X register) or NaN-boxing (if the target is an F register) is required in software to get the same semantics
+
+All other instructions from D, F and Zfh extensions execute as specified except that
 
 . the register specifier targets the integer register file
 . x0 cannot be written to (so the result is discarded), whereas f0 does exist for RV32F
-
+. note register pair handling for RV32D, specified above
+. the assembler syntax must only refer to X registers for *Zfinx*
 
 For example, the encoding for
 
@@ -361,39 +412,9 @@ on a *non-Zfinx* part, or
 
 on a *Zfinx* part.
 
-[[rv32f-zfh-zfinx-specification]]
-= RV32F Zfh Zfinx Specification
-
-The specification of RV32F Zfh *Zfinx* based upon RV32F *Zfinx*, with the addition of half-precision instructions. All of the F-extension load/stores and moves become reserved.The reserved opcodes will be used by future standard extensions.
-
-The Zfh-extension version of
-
-. load (*FLH*) is removed, software has a choice of using LH or LHU, neither of which are equivalent for the upper half of the register so software NaN-boxing is required to get the same semantics
-. store (*FSH*) is equivalent to the integer version, so is removed
-. integer to floating point move (*FMV.X.H*) is removed so software NaN-boxing is required to get the same semantics
-. floating point to integer move (*FMV.H.X*) is removed so software sign extension is required to get the same semantics
-
-
-[cols="",options="header",]
-|===================================================================
-|*Instruction* |*RV32F Zfh Zfinx*
-2+|*load/stores*
-|FLW frd, offset(xrs1) |reserved, replaced by LW
-|FLH frd, offset(xrs1) |reserved, use LH[U] then NaN-box in software
-|C.FLW frd’, offset(xrs1’) |reserved, replaced by C.LW
-|C.FLWSP frd, uimm(x2) |reserved, replaced by C.LWSP
-|FSW frs2, offset(xrs1) |reserved, replaced by SW
-|FSH frs2, offset(xrs1) |reserved, replaced by SH
-|C.FSW frs2’, offset(xrs1’) |reserved, replaced by C.SW
-|C.FSWSP frd, uimm(x2) |reserved, replaced by C.SWSP
-2+|*moves*
-|FMV.X.W xrd, frs1 |reserved, replaced by MV
-|FMV.W.X frd, xrs1 |reserved, replaced by MV
-|FMV.X.H xrd, frs1 |reserved, use MV then sign extension in software
-|FMV.H.X frd, xrs1 |reserved, use MV then NaN-box in software
-|===================================================================
-
 The B-extension is useful for sign extending and NaN-boxing.
+
+to sign-extend using the B-extension:
 
 *FMV.X.H rd, rs1*
 
@@ -401,7 +422,7 @@ is replaced by
 
 *SEXT.H rd, rs1*
 
-without the B-extension two instructions are required: shift left 16 places, then arithmetic shift right 16 places.
+Without the B-extension two instructions are required: shift left 16 places, then arithmetic shift right 16 places.
 
 NaN boxing in software is more involved, as the upper part of the register must be set to 1. The B-extension is also helpful in this case. 
 
@@ -412,64 +433,4 @@ is replaced by
 *C.ADDI a2, zero, -1*
 
 *PACK a0, a1, a2*
-
-
-[[rv32fd-zfh-zfinx-specification]]
-= RV32FD [Zfh] Zfinx Specification
-
-[cols="",options="header",]
-|=================================================================================================================
-|*Instruction* |*RV32FD Zfinx* |*RV32FD Zfh Zfinx*
-3+|*load/store*
-|FLD **f**rd, offset(xrs1) |reserved, replaced by LW, LW |reserved, replaced by LW, LW
-|FLW **f**rd, offset(xrs1) |reserved, replaced by LW |reserved, replaced by LW
-|FLH **f**rd, offset(xrs1) |reserved |reserved, use LH[U] then NaN-box in software
-|C.FLD **f**rd, offset(xrs1) |reserved, replaced by C.LW, C.LW or LW, LW |reserved, replaced by C.LW, C.LW or LW, LW
-|C.FLW **f**rd’, offset(xrs1’) |reserved, replaced by C.LW |reserved, replaced by C.LW
-|C.FLWSP **f**rd, uimm(x2) |reserved, replaced by C.LWSP |reserved, replaced by C.LWSP
-|FSD **f**rd, offset(xrs1) |reserved, replaced by SW, SW |reserved, replaced by SW, SW
-|FSW **f**rs2, offset(xrs1) |reserved, replaced by SW |reserved, replaced by SW
-|FSH **f**rs2, offset(xrs1) |reserved |reserved, replaced by SH
-|C.FSD **f**rd, offset(xrs1) |reserved, replaced by C.SW, C.SW or SW, SW |reserved, replaced by C.SW, C.SW or SW, SW
-|C.FSW **f**rs2’, offset(xrs1’) |reserved, replaced by C.SW |reserved, replaced by C.SW
-|C.FSWSP **f**rd, uimm(x2) |reserved, replaced by C.SWSP |reserved, replaced by C.SWSP
-3+|*moves*
-|FMV.X.D xrd, **f**rs1 |reserved, replaced by MV, MV |reserved, replaced by MV, MV
-|FMV.D.X **f**rd, xrs1 |reserved, replaced by MV, MV |reserved, replaced by MV, MV
-|FMV.X.W xrd, **f**rs1 |reserved, replaced by MV, only writes 32-bits |reserved, replaced by MV, only writes 32-bits
-|FMV.W.X **f**rd, xrs1 |reserved, replaced by MV, only writes 32-bits |reserved, replaced by MV, only writes 32-bits
-|FMV.X.H xrd, **f**rs1 |reserved |reserved, use MV then sign extend in software
-|FMV.H.X **f**rd, xrs1 |reserved |reserved, use MV then NaN-box in software
-|=================================================================================================================
-
-
-[[rv64fd-zfh-zfinx-specification]]
-= RV64FD [Zfh] *Zfinx Specification*
-
-RV64FD [Zfh] *Zfinx* does not require floating point load/store/move instructions.
-
-[cols="",options="header",]
-|=========================================================================================================================
-|*Instruction* |*RV64FD Zfinx* |*RV64FD Zfh Zfinx*
-3+|*load/stores*
-|FLD **f**rd, offset(xrs1) |reserved, replaced by LD |reserved, replaced by LD
-|FLW **f**rd, offset(xrs1) |reserved, use LW[U] and NaN-box in software |reserved, use LW[U] and NaN-box in software
-|FLH **f**rd, offset(xrs1) |reserved |reserved, use LH[U] and NaN-box in software
-|C.FLD **f**rd’, offset(xrs1’) |reserved, replaced by C.LD |reserved, replaced by C.LD
-|C.FLDSP **f**rd, uimm(x2) |reserved, replaced by C.LDSP |reserved, replaced by C.LDSP
-|FSD **f**rs2, offset(xrs1) |reserved, replaced by SD |reserved, replaced by SD
-|FSW **f**rs2, offset(xrs1) |reserved, replaced by SW |reserved, replaced by SW
-|FSH **f**rs2, offset(xrs1) |reserved |reserved, replaced by SH
-|C.FSD **f**rd’, offset(xrs1’) |reserved, replaced by C.SD |reserved, replaced by C.SD
-|C.FSDSP **f**rd, uimm(x2) |reserved, replaced by C.SDSP |reserved, replaced by C.SDSP
-3+|*moves*
-|FMV.X.D xrd, **f**rs1 |reserved, replaced by MV |reserved, replaced by MV
-|FMV.D.X **f**rd, xrs1 |reserved, replaced by MV |reserved, replaced by MV
-|FMV.X.W xrd, **f**rs1 |reserved, use MV then sign extension in software |reserved, use MV then sign extension in software
-|FMV.W.X **f**rd, xrs1 |reserved, use MV then NaN-boxing in software |reserved, use MV then NaN-boxing in software
-|FMV.X.H xrd, **f**rs1 |reserved |reserved, use MV then sign extension in software
-|FMV.H.X **f**rd, xrs1 |reserved |reserved, use MV then NaN-box in software
-|=========================================================================================================================
-
-This configuration requires NaN-boxing and sign-extension to 64-bits.
 
