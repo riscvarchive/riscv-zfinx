@@ -256,7 +256,7 @@ the callee may not know if it is to be interpreted as a 32-bit or 16-bit value.
 Therefore if the callee misinterprets the value as 32-bit then the 
 NaN-boxing ensures that the value is interpreted as a NaN, so the software should detect this and return an error.
 
-For *Zfinx* the NaN-boxing is limited to *XLEN* bits, not *FLEN* bits. Therefore a FADD.S executed on a RV32D core will write a 64-bit value (the MSH will be all 1’s). On a RV32D Zfinx core it will write a 32-bit register, i.e. a single X register only. This means there is semantic difference between these code sequences:
+For *Zfinx* the NaN-boxing is limited to *XLEN* bits, not *FLEN* bits. Therefore a FADD.S executed on a RV64D core will write a 64-bit value (the MSH will be all 1’s). On a RV32D Zfinx core it will write a 32-bit register, i.e. a single X register only. This means there is semantic difference between these code sequences:
 
 *#ifdef __riscv_zfinx*
 
