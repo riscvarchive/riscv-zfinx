@@ -258,17 +258,38 @@ NaN-boxing ensures that the value is interpreted as a NaN, so the software shoul
 
 For *Zfinx* the NaN-boxing is limited to *XLEN* bits, not *FLEN* bits. Therefore a FADD.S executed on a RV64D core will write a 64-bit value (the MSH will be all 1’s). On a RV32D Zfinx core it will write a 32-bit register, i.e. a single X register only. This means there is semantic difference between these code sequences:
 
-*#ifdef __riscv_zfinx*
+[source,sourceCode,text]
+----
+#ifdef __riscv_zfinx
 
-*fadd.s x2, x3, x4 # only write x2 (32-bits), x3 is not written*
+fadd.s x2, x3, x4 # only write x2 (32-bits), x3 is not written
 
-*#else*
+#else
 
-*fadd.s f2, f3, f4 # NaN-box d2 register to 64-bits*
+fadd.s f2, f3, f4 # NaN-box d2 register to 64-bits
 
-*#endif*
+#endif
+----
 
-NaN-boxing is supported by *Zfinx* implementations, for compatibility with the RISC-V base ISA standard and the RISC-V Vector extension.
+NaN-box generation is supported by *Zfinx* implementations, for compatibility with the RISC-V base ISA standard and the RISC-V Vector extension. NaN-box checking is not supported by scalar floating point instructions. For example for RV64F:
+
+[source,sourceCode,text]
+----
+#ifdef __riscv_zfinx
+
+lw[u] x1, 0(sp)   # load 32-bits into x1 and sign / zero extend upper 32-bits
+fadd.s x1, x1, x1 # use x1 but do not check source is Nan-boxed, NaN-box output
+
+#else
+
+flw.s  f1, 0(sp)  # load 32-bits into f1 and NaN-box to 64-bits (set upper 32-bits to 0xFFFFFFFF)
+fadd.s f2, f1, f1 # check f1 is NaN-boxed, NaN-box output
+
+#endif
+----
+
+Floating point loads are not supported on *Zfinx* cores so x1 is not NaN-boxed in the example above, therefore the fadd.s instruction does not check the input for NaN-boxing.
+The result is NaN-boxed, which means setting the upper half of the output register to 0xFFFFFFFF.
 
 NaN-boxing is only used by floating point instructions. Narrow floating point loads are not supported on *Zfinx* cores. 
 For example FLH is not supported, which would require NaN-boxing the result to *XLEN* bits.
