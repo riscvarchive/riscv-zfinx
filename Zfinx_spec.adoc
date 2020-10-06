@@ -59,16 +59,21 @@ To achieve this we break all current and future floating point extensions into t
 |Zffbase |Support single precision base instructions
 |Zfdbase |Support double precision base instructions
 |Zfqbase |Support quad precision base instructions
-|Zfma |Support multiply-add for all FP extensions
-|Zfdiv |Support div/sqrt for all FP extensions
-|Zfinx |Share the integer register file for all FP extensions
+|Zfldstmv|Support load,store and integer to/from FP move for all FP extensions
+|Zfma    |Support multiply-add for all FP extensions
+|Zfdiv   |Support div/sqrt for all FP extensions
+|Zfinx   |Share the integer register file for all FP extensions
 |============================================================
 
-So the *Zfma*, *Zfdiv*, *Zfinx* options apply to all floating point extensions, including future ones. This keeps the support regular across the different options.
+So the *Zfldstmv*, *Zfma*, *Zfdiv*, *Zfinx* options apply to all floating point extensions, including future ones. This keeps the support regular across the different options.
 
 Therefore *RV32FD Zfh Zfinx* can also be expressed as:
 
 *rv32_Zfhbase_Zffbase_Zfdbase_Zfma_Zfdiv_Zfinx*
+
+Also *RV32FD Zfh* can be expressed as:
+
+*rv32_Zfhbase_Zffbase_Zfdbase_Zfldstmv_Zfma_Zfdiv_Zfinx*
 
 The options are designed to be additive, none of them remove instructions.
 
