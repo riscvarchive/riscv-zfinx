@@ -255,6 +255,8 @@ In the case of RV32D *Zfinx*, register pairs are used. See above for x0 handling
 
 NaN-boxing is used when a floating point value is written which is smaller than the width of the target register. For example, writing a half-precision value into a 32-bit register (RV32F Zfh) or writing a 32-bit value into a 64-bit register (*RV64F*). All upper bits are written with 1s. Therefore if the register is read by a floating point instruction which reads a value wider than the one which wrote the result, the value is interpreted as a NaN to indicate that an error has occurred.
 
+NaN-boxing also simplifies context save/restore as the software does not need to know the precision of the value stored in the floating point registers.
+
 NaN boxing is useful in cases where it is unknown whether floating point data will be interpreted as the full width of the register, or as a shorter value. 
 For example for RV32F Zfh *Zfinx* when a half-precision value is passed as a function argument, 
 the callee may not know if it is to be interpreted as a 32-bit or 16-bit value. 
