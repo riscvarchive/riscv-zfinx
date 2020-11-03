@@ -73,7 +73,7 @@ Therefore *RV32FD Zfh Zfinx* can also be expressed as:
 
 Also *RV32FD Zfh* can be expressed as:
 
-*rv32_Zfhbase_Zffbase_Zfdbase_Zfldstmv_Zfma_Zfdiv_Zfinx*
+*rv32_Zfhbase_Zffbase_Zfdbase_Zfldstmv_Zfma_Zfdiv*
 
 The options are designed to be additive, none of them remove instructions.
 
@@ -183,7 +183,7 @@ Therefore *Zfinx* should allow for small embedded cores to support floating poin
 . Reduced code size by removing the floating point library
 .. If only a subset of the floating point instructions are implemented part of the floating point library may still be required
 . Reduced code size by the replacement of redundant 32-bit and 16-bit instructions with others which will improve code density
-.. Of new instructions for this purpose is out of scope for *Zfinx*
+.. Addition of new instructions for this purpose is out of scope for *Zfinx*
 
 
 [[abi]]
@@ -246,7 +246,7 @@ If a floating point instruction targets x0 then it will still execute, and will 
 
 If the floating point source is invalid then it will set the *fflags.NV* bit, regardless of whether *Zfinx* is implemented. The target register is not written as it is x0.
 
-Floating point instructions will cause an illegal instruction exception if *fcsr.RM* is in an illegal state. This is still the case if the instruction targets x0.
+If *fcsr.RM* is in an illegal state then floating point instruction behaviour is the same whether the target register is x0 is not, i.e. targetting x0 doesn't disable any execution side effects.
 
 In the case of RV32D *Zfinx*, register pairs are used. See above for x0 handling.
 
