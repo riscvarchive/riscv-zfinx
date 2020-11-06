@@ -48,7 +48,7 @@ This argument already exists for RISCV
 
 This argument exists for other architectures (e.g. MIPs) but not for RISCV, so it needs to be added
 
-*gcc mno-fused-madd*
+*gcc -mno-fused-madd*
 
 To achieve this we break all current and future floating point extensions into three parts: *Zf*base*, *Zfma* and *Zfdiv*. *Zfinx* is orthogonal, and so is an additional modifier to these as described below.
 
@@ -192,7 +192,7 @@ Therefore *Zfinx* should allow for small embedded cores to support floating poin
 For details of the current calling conventions see:
 
 https://github.com/riscv/riscv-elf-psabi-doc/blob/master/riscv-elf.md[_https://github.com/riscv/riscv-elf-psabi-doc/blob/master/riscv-elf.md_]
-
+C
 The ABI when using *Zfinx* is the standard integer calling convention as listed in the table below.
 
 The *Zfinx* ABI can be thought of as being similar to using the softfloat routines to execute floating point functionality, but replacing the call to the softfloat function with the actual floating point ISA instruction.
@@ -203,7 +203,7 @@ Note that RV32D *Zfinx* requires register pair handling. This does not require a
 [[mstatus.fs]]
 = mstatus.fs
 
-For *Zfinx mstatus*.**fs**=0, because all the integer registers already form part of the current context. Note however that *fcsr* needs to be saved and restored. This gives a performance advantage when saving/restoring contexts.
+For *Zfinx* core *mstatus*.*fs* is hardwired to zero, because all the integer registers already form part of the current context. Note however that *fcsr* needs to be saved and restored. This gives a performance advantage when saving/restoring contexts.
 
 Unlike *non-Zfinx* cores, floating point instructions and *fcsr* accesses do not trap if **mstatus.fs**=0.
 
@@ -213,7 +213,7 @@ Unlike *non-Zfinx* cores, floating point instructions and *fcsr* accesses do not
 This option is more complex due to the register pairs, however if a small embedded core requires double precision floating point (for example, for running GPS software) then it offers significant advantages.
 
 . There is no 16-register option for the floating point registers, so this immediately saves 32 x 64-bits (2048-bits) of state.
-. It removes the need for the C.FLD, C.FSW instructions which take value RVC encoding space
+. It removes the need for the C.FL*, C.FS* instructions which take value RVC encoding space
 . Compared to using a software library, even a slow iterative floating point unit will give significant code size savings and performance improvements
 
 All D-extension instructions which are implemented with *Zfinx* will access register pairs:
