@@ -5,7 +5,7 @@
 [[Heading]]
 == Overview
 
-Zfinx is an extension which changes all existing and future floating point extensions which use the `F` floating point registers, so that instead they use the `X` registers. Hence the name `F-in-X`. This does not affect floating point instructions which are implemented as part of the Vector (`v`) extension. `Zfinx` additionally modifies the RISCV base architecture to remove all floating point load (e.g. FLW) store (e.g. FSW) and register move (e.g. FMV.X.W) encodings as the integer versions of these are required instead.
+Zfinx is an extension which changes all existing and future floating point extensions which use the `F` floating point registers, so that instead they use the `X` registers. Hence the name `F-in-X`. This does not affect floating point instructions which are implemented as part of the Vector (`v`) extension. `Zfinx` additionally modifies the RISCV base architecture to remove all floating point load (e.g. `FLW`) store (e.g. `FSW`) and register move (e.g. `FMV.X.W`) encodings as the integer versions of these are required instead.
 
 On a `Zfinx` core the assembler syntax of floating point instructions changes so that they only refer to `X` registers. Therefore on an RV32F core this is legal syntax:
 
@@ -51,20 +51,28 @@ Note :
 
 RV128 and the `Q` extension are not covered by this specification, but it is simple to extend this specification to include them.
 
+[[semantics]]
+== Semantic Differences
+
+The NaN-boxing behaviour of floating point arithmetic instructions is modified to suppress checking of sources only.
+
+There are no other semantic differences for floating point instruction behaviour between a `Zfinx` and a `non-Zfinx` core.
+
+
 [[Heading]]
 == Discovery
 
 If `Zfinx` is specified then the compiler will have the following *#define* set
 
-*__riscv_zfinx*
+`__riscv_zfinx`
 
 So software can use this to choose between `Zfinx` or normal versions of floating point code.
 
 Privileged code can detect whether `Zfinx` is implemented by checking if:
 
-. *mstatus.FS* is hardwired to zero, and
+. `mstatus.FS` is hardwired to zero, and
 
-. *misa.F* is 1 at reset, or is writeable
+. `misa.F` is 1 at reset, or is writeable
 
 
 Non-privileged code can detect whether `Zfinx` is implemented as follows.
@@ -92,9 +100,9 @@ If a0 is non-zero then it’s a `Zfinx` core, otherwise it’s a *non-Zfinx* cor
 [[mstatus.fs]]
 == mstatus.fs
 
-For `Zfinx` core *mstatus*.*fs* is hardwired to zero, because all the integer registers already form part of the current context. Note however that *fcsr* needs to be saved and restored. This gives a performance advantage when saving/restoring contexts.
+For `Zfinx` cores `mstatus.fs` is hardwired to zero, because all the integer registers already form part of the current context. Note however that `fcsr` needs to be saved and restored. This gives a performance advantage when saving/restoring contexts.
 
-Unlike *non-Zfinx* cores, floating point instructions and *fcsr* accesses do not trap if **mstatus.fs**=0.
+Unlike *non-Zfinx* cores, floating point instructions and `fcsr` accesses do not trap if `mstatus.fs`=0.
 
 [[rv32fd-zfh-zfinx-register-pair-handling]]
 == Register pair handling for XLEN < FLEN
@@ -104,38 +112,38 @@ For `RV32D`, all D-extension instructions which are implemented with `Zfinx` wil
 . The specified register must be even, odd registers will cause an illegal instruction exception
 . Even registers will cause an even/odd pair to be accessed
 .. Accessing Xn will cause the {Xn+1, Xn} pair to be accessed. For example if n = 2
-.. X2 is the least significant half (bits [31:0]) for little endian mode
-.. X3 the most significant half (bits [63:32]) for little endian mode
+... X2 is the least significant half (bits [31:0]) for little endian mode
+... X3 the most significant half (bits [63:32]) for little endian mode
 .. For big endian mode the register mapping is reversed, so X2 is the most significant half, and X3 is the least significant half.
 . X0 has special handling
 .. Reading {X1, X0} will read all zeros
 .. Writing {X1, X0} will discard the entire result, it will not write to X1
 
-Note that *Zp64* from the P-extension specified consistent register pair handling.
+Note that *Zp64* from the P-extension specifies consistent register pair handling.
 
-Big endian mode is enabled in M-mode if **mstatus.MBE**=1, in S-mode if **mstatus.SBE**=1, or in U-mode if **mstatus.UBE**=1
+Big endian mode is enabled in M-mode if `mstatus.MBE`=1, in S-mode if `mstatus.SBE`=1, or in U-mode if `mstatus.UBE`=1
 
 The register pairs are only used by the floating point arithmetic instructions. All integer loads and stores will only access `XLEN` bits, not `FLEN`.
 
-`FLW` on a `RV32D` core will NaN-box and so load a 64-bit value in an `F` register. On a `RV32D Zfinx` core `FLW` is not implemented, and the behaviour of `LW` is clearly specified to write a single `X` register. For strict compatibility with `FLW` software should use `LW` to load the even numbered register, and write all 1’s to the odd numbered register in the pair to NaN-box the result. In fact this is unlikely to be required, and the compiler will not do this.
+`FLW` on a `RV32D` core will NaN-box and so load a 64-bit value in an `F` register. On a `RV32D Zfinx` core `FLW` is not implemented, and the behaviour of `LW` is clearly specified to write a single `X` register. For strict compatibility with `FLW` software should use `LW` to load the even numbered register, and write all 1’s to the odd numbered register in the pair to NaN-box the result. _This is unlikely to be required, and the compiler will not do this._
 
 [[x0-register-target]]
 = x0 register target
 
-If a floating point instruction targets x0 then it will still execute, and will set flags in *fcsr* (if required). It will not write to a target register. This matches the non-Zfinx behaviour for
+If a floating point instruction targets x0 then it will still execute, and will set flags in `fcsr` (if required). It will not write to a target register. This matches the non-Zfinx behaviour for
 
-*fcvt.w.s x0, f0*
+`fcvt.w.s x0, f0`
 
-If the floating point source is invalid then it will set the *fflags.NV* bit, regardless of whether `Zfinx` is implemented. The target register is not written as it is x0.
+If the floating point source is invalid then it will set the `fflags.NV` bit, regardless of whether `Zfinx` is implemented. The target register is not written as it is x0.
 
-If *fcsr.RM* is in an illegal state then floating point instruction behaviour is the same whether the target register is x0 is not, i.e. targetting x0 doesn't disable any execution side effects.
+If `fcsr.RM` is in an illegal state then floating point instruction behaviour is the same whether the target register is x0 is not, i.e. targetting x0 doesn't disable any execution side effects.
 
 In the case of `RV32D Zfinx`, register pairs are used. See above for x0 handling.
 
 [[nan-boxing]]
 = NaN-boxing
 
-NaN-boxing is used when a floating point value is written which is smaller than the width of the target register. For example, writing a half-precision value into a 32-bit register (e.g. `RV32F Zfh` ) or writing a 32-bit value into a 64-bit register (e.g. RV64F). All upper bits are written with 1s. Therefore if the register is read by a floating point instruction which reads a value wider than the one which wrote the result, the value is interpreted as a NaN to indicate that an error has occurred.
+NaN-boxing is used when a floating point value is written which is smaller than the width of the target register. For example, writing a half-precision value into a 32-bit register (e.g. `RV32F Zfh` ) or writing a 32-bit value into a 64-bit register (e.g. `RV64F`). All upper bits are written with 1s. Therefore if the register is read by a floating point instruction which reads a value wider than the one which wrote the result, the value is interpreted as a NaN to indicate that an error has occurred.
 
 NaN-boxing also simplifies context save/restore as the software does not need to know the precision of the value stored in the floating point registers.
 
@@ -145,7 +153,7 @@ the callee may not know if it is to be interpreted as a 32-bit or 16-bit value.
 Therefore if the callee misinterprets the value as 32-bit then the 
 NaN-boxing ensures that the value is interpreted as a NaN, so the software should detect this and return an error.
 
-For `Zfinx` the NaN-boxing is limited to `XLEN` bits, not `FLEN` bits. Therefore a `FADD.S` executed on an RV64D core will write a 64-bit value (the MSH will be all 1’s). On an `RV32D Zfinx` core it will write a 32-bit register, i.e. a single X register only. This means there is semantic difference between these code sequences:
+For `Zfinx` the NaN-boxing is limited to `XLEN` bits, not `FLEN` bits. Therefore a `FADD.S` executed on an `RV64D` core will write a 64-bit value (the MSH will be all 1’s). On an `RV32D Zfinx` core it will write a 32-bit register, i.e. a single X register only. This means there is semantic difference between these code sequences:
 
 [source,sourceCode,text]
 ----
@@ -160,7 +168,7 @@ fadd.s f2, f3, f4 # NaN-box 64-bit f2 register to 64-bits
 #endif
 ----
 
-NaN-box generation is supported by `Zfinx` implementations. NaN-box checking is not supported by scalar floating point instructions. For example for RV64F:
+NaN-box generation is supported by `Zfinx` implementations. NaN-box checking is not supported by scalar floating point instructions. For example for `RV64F`:
 
 [source,sourceCode,text]
 ----
@@ -210,7 +218,7 @@ special handling Xreg={0, 1}
 
 |=======================================================================
 
-Therefore, for example, if a `FADD.S` instruction is issued on a RV64F core then the upper 32-bits will be set to one in the target integer register, or an `FADD.H` (floating point add half-word) instruction will set the upper 48-bits to one.
+Therefore, for example, if a `FADD.S` instruction is issued on a `RV64F` core then the upper 32-bits will be set to one in the target integer register, or an `FADD.H` (floating point add half-word) instruction will set the upper 48-bits to one.
 
 [[assembly-syntax-and-code-porting]]
 = Assembly Syntax and Code Porting
@@ -221,7 +229,7 @@ The assembly syntax is different for `Zfinx` cores so that users are forced to a
 . All scalar floating point loads and stores instructions are removed from the architecture
 . All integer / floating point move isntructions are removed from the architecture
 
-Therefore any references to `F` registers, or removed instructions will cause assembly errors.
+Therefore any references to `F` registers, or removed instructions will cause assembler errors.
 
 For example, the encoding for
 
@@ -305,30 +313,30 @@ All floating point loads, stores and floating point to integer moves are removed
 Notes:
 
 . Where a floating point load loads fewer than `XLEN` bits then software NaN-boxing in software is required to get the same semantics
-. Where a floating point move moves fewer than `XLEN` bits then either sign extension (if the target is an X register) or NaN-boxing (if the target is an F register) is required in software to get the same semantics
+. Where a floating point move moves fewer than `XLEN` bits then either sign extension (if the target is an `X` register) or NaN-boxing (if the target is an `F` register) is required in software to get the same semantics
 
 
 The B-extension is useful for sign extending and NaN-boxing.
 
 To sign-extend using the B-extension:
 
-*FMV.X.H rd, rs1*
+`FMV.X.H rd, rs1`
 
 is replaced by
 
-*SEXT.H rd, rs1*
+`SEXT.H rd, rs1`
 
 Without the B-extension two instructions are required: shift left 16 places, then arithmetic shift right 16 places.
 
 NaN boxing in software is more involved, as the upper part of the register must be set to 1. The B-extension is also helpful in this case. 
 
-*FMV.H.X a0, a1*
+`FMV.H.X a0, a1`
 
 is replaced by
 
-*C.ADDI a2, zero, -1*
+`C.ADDI a2, zero, -1`
 
-*PACK a0, a1, a2*
+`PACK a0, a1, a2`
 
 
 
@@ -367,7 +375,8 @@ Small embedded cores which need to implement floating point extensions have some
 
 .. There are the same performance/area tradeoffs for the FPU design
 
-Zfinx is implemented to allow core area reduction sa the area of the `F` register file is significant, for example:
+Zfinx is implemented to allow core area reduction as the area of the `F` register file is significant, for example:
+
 . `RV32IF Zfinx` saves 1/2 the register file state compared to `RV32IF`
 . `RV32EF Zfinx` saves 2/3 the register file state compared to `RV32EF`
 
@@ -417,9 +426,9 @@ Note that `RV32D` `Zfinx` requires register pair handling. This does not require
 [[fp_configs]]
 = Floating Point Configurations To Reduce Area
 
-To reduce the area overhead of FPU hardware new configurations will make the F[N]MADD.\*, F[N]MSUB.* and FDIV.\*, FSQRT.* instructions optional in hardware. This then gives the choice of implementing them in software instead by:
+To reduce the area overhead of FPU hardware new configurations will make the `F[N]MADD.\*, F[N]MSUB.*` and `FDIV.\*, FSQRT.*`` instructions optional in hardware. This then gives the choice of implementing them in software instead by:
 
-. Taking an illegal instruction trap, and calling the required software routine in the trap handler. This requires that the opcodes are not reallocated and gives binary compatibility between cores with/without hardware support for F[N]MADD.\*, F[N]MSUB.* and FDIV.\*, FSQRT.*, but is lower performance than option 2
+. Taking an illegal instruction trap, and calling the required software routine in the trap handler. This requires that the opcodes are not reallocated and gives binary compatibility between cores with/without hardware support for `F[N]MADD.\*, F[N]MSUB.*` and `FDIV.\*, FSQRT.*`, but is lower performance than option 2
 
 . Use the GCC options below so that a software library is used to execute them
 
