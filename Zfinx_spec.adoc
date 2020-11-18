@@ -43,16 +43,15 @@ formats are implicitly supported, e.g. 64 or 32-bit POSIT formats.
 .supported `Zfinx` configurations
 [width=100%,options="header",]
 |================================================================
-|Architecture     3+|Supported floating point extensions |Comment
-|                   |D      |F      |Zfh                 |
-|RV32F Zfinx        |       |   Y   |                    |XLEN==FLEN
-|RV32F Zfh Zfinx    |       |   Y   |      Y             |XLEN==FLEN
-|RV32IFD Zfinx      |   Y   |   Y   |                    |XLEN<FLEN
-|RV32IFD Zfh Zfinx  |   Y   |   Y   |      Y             |XLEN<FLEN
-|RV64F Zfinx        |       |   Y   |                    |XLEN>FLEN
-|RV64F Zfh Zfinx    |       |   Y   |      Y             |XLEN>FLEN
-|RV64FD Zfinx       |   Y   |   Y   |                    |XLEN==FLEN
-|RV64FD Zfh Zfinx   |   Y   |   Y   |      Y             |XLEN==FLEN
+|Architecture       |Comment
+|RV32IFD Zfinx      |XLEN<FLEN
+|RV32IFD Zfh Zfinx  |XLEN<FLEN
+|RV32F Zfinx        |XLEN==FLEN
+|RV32F Zfh Zfinx    |XLEN==FLEN
+|RV64FD Zfinx       |XLEN==FLEN
+|RV64FD Zfh Zfinx   |XLEN==FLEN
+|RV64F Zfinx        |XLEN>FLEN
+|RV64F Zfh Zfinx    |XLEN>FLEN
 |================================================================
 
 Note that `RV32FD [Zfh] Zfinx` requires register pairs so is more complex than the other cases.
@@ -62,7 +61,7 @@ RV128 and the `Q` extension are not covered by this specification, but it is sim
 [[semantics]]
 == Semantic Differences
 
-The NaN-boxing behaviour of floating point arithmetic instructions is modified to suppress checking of sources only. Flaoting point results are always NaN-boxed to `XLEN` bits.
+The NaN-boxing behaviour of floating point arithmetic instructions is modified to suppress checking of sources only. Floating point results are always NaN-boxed to `XLEN` bits.
 
 _NaN-boxing checking is removed as integer loads do not NaN-box their result, and so loading fewer than `XLEN` bits (for example using `LW` to load floating point data on an RV64 core) would otherwise require NaN-boxing in software which wastes performance and code-size_
 
@@ -128,11 +127,13 @@ For `RV32D`, all D-extension instructions which are implemented with `Zfinx` wil
 .. Reading {X1, X0} will read all zeros
 .. Writing {X1, X0} will discard the entire result, it will not write to X1
 
-Note that *Zp64* from the P-extension specifies consistent register pair handling.
+The register pairs are _only_ used by the floating point arithmetic instructions. All integer loads and stores will only access `XLEN` bits, not `FLEN`.
 
-Big endian mode is enabled in M-mode if `mstatus.MBE`=1, in S-mode if `mstatus.SBE`=1, or in U-mode if `mstatus.UBE`=1
+Note:
 
-The register pairs are only used by the floating point arithmetic instructions. All integer loads and stores will only access `XLEN` bits, not `FLEN`.
+. *Zp64* from the P-extension specifies consistent register pair handling.
+. Big endian mode is enabled in M-mode if `mstatus.MBE`=1, in S-mode if `mstatus.SBE`=1, or in U-mode if `mstatus.UBE`=1
+
 
 [[x0-register-target]]
 = x0 register target
@@ -415,7 +416,7 @@ The options are designed to be additive, none of them remove instructions.
 
 Small embedded cores which need to implement floating point extensions have some options:
 
-.  Use software emulation of floating point instructions, so dn't implement a hardware FPU which gives minimum core area
+.  Use software emulation of floating point instructions, so don't implement a hardware FPU which gives minimum core area
 
 ..  The floating point library can be large, and expensive in terms of ROM or flash storage, costing power and energy consumption
 
