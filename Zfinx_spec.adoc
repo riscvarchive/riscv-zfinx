@@ -7,9 +7,9 @@
 
 `Zfinx` is an extension which changes all existing and future floating point extensions which use the `F` floating point registers, so that instead they use the `X` registers. Hence the name `F-in-X`. This does not affect floating point instructions which are implemented as part of the Vector (`v`) extension. `Zfinx` additionally removes all
 
-. floating point load instructions (e.g. `FLW`) 
-. floating point store instructions (e.g. `FSW`) 
-. integer to/from floating point register move instructions (e.g. `FMV.X.W`) 
+. floating point load instructions (e.g. `FLW`)
+. floating point store instructions (e.g. `FSW`)
+. integer to/from floating point register move instructions (e.g. `FMV.X.W`)
 
 In all cases the integer versions of these are required instead.
 
@@ -36,7 +36,7 @@ _The assembler syntax changes to avoid code-porting bugs, so that the registers 
 `Zfinx` may be used with any extensions which uses `F` registers. The number of integer registers does not affect `Zfinx` (`I` or `E` extensions)
 although the relative sizes of `XLEN` and `FLEN` do affect the specification.
 
-This specification uses D for 64-bit floating point, F for 32-bit floating point and Zfh for 16-bit floating point.  `Zfinx` behviour is only affected by the data width so future
+This specification uses D for 64-bit floating point, F for 32-bit floating point and Zfh for 16-bit floating point.  `Zfinx` behaviour is only affected by the data width so future
 formats are implicitly supported, e.g. 64 or 32-bit POSIT formats.
 
 [suported-configurations]
@@ -273,12 +273,12 @@ All floating point loads, stores and floating point to integer moves are removed
 |*stores* 8+|*suggested replacement instructions*
 
 |FSD **f**rd, offset(xrs1) |_reserved_|SW,SW 2+|SD |_reserved_|SW, SW 2+|SD
-|FSW **f**rd, offset(xrs1) 8+|SW 
+|FSW **f**rd, offset(xrs1) 8+|SW
 |FSH **f**rd, offset(xrs1) 4+|SH 4+|_reserved_
 
 |C.FSD **f**rd’, offset(xrs1’) |_reserved_|[C.]SW,[C.]SW 2+|[C.]SD |_reserved_|[C.]SW,[C.]SW 2+|[C.]SD
 |C.FSDSP **f**rd, uimm(x2) |_reserved_|C.SWSP,C.SWSP 2+|C.SDSP |_reserved_|C.SWSP,C.SWSP 2+|C.SDSP
-|C.FSW **f**rd, offset(xrs1) 8+|C.SW 
+|C.FSW **f**rd, offset(xrs1) 8+|C.SW
 |C.FSWSP **f**rd, uimm(x2)   8+|C.SWSP
 
 |=========================================================================================================================
@@ -320,7 +320,7 @@ is replaced by
 
 Without the B-extension two instructions are required: shift left 16 places, then arithmetic shift right 16 places.
 
-NaN boxing in software is more involved, as the upper part of the register must be set to 1. The B-extension is also helpful in this case. 
+NaN boxing in software is more involved, as the upper part of the register must be set to 1. The B-extension is also helpful in this case.
 
 `FMV.H.X a0, a1`
 
@@ -455,4 +455,3 @@ Therefore `Zfinx` should allow for small embedded cores to support floating poin
 . Similar context switch time as an integer only core
 .. there are no `F` registers to save/restore
 . Reduced code size by removing the floating point library
-
