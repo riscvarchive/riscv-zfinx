@@ -359,12 +359,12 @@ A `Zfinx` core cannot trap on floating point instructions by setting `mstatus.fs
 For details of the current calling conventions see:
 
 https://github.com/riscv/riscv-elf-psabi-doc/blob/master/riscv-elf.md[_https://github.com/riscv/riscv-elf-psabi-doc/blob/master/riscv-elf.md_]
-C
-The ABI when using `Zfinx` is the standard integer calling convention as listed in the table below.
 
-The `Zfinx` ABI can be thought of as being similar to using the softfloat routines to execute floating point functionality, but replacing the call to the softfloat function with the actual floating point ISA instruction.
+The ABI when using `Zfinx` must be one of the the standard integer calling conventions as listed below:
 
-Note that `RV32D` `Zfinx` requires register pair handling. This does not require an ABI change as long types are already supported using register pairs. It is likely to require some work in the compiler (according to Jim Wilson).
+- ilp32e
+- ilp32
+- lp64
 
 [[fp_configs]]
 = Floating Point Configurations To Reduce Area
