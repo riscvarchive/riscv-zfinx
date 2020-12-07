@@ -1,6 +1,16 @@
 
 [[Title]]
 = `Zfinx` Specification
+Version 0.1
+:doctype: book
+:encoding: utf-8
+:lang: en
+:toc: left
+:toclevels: 4
+:numbered:
+:xrefstyle: short
+:le: &#8804;
+:rarr: &#8658;
 
 [[Heading]]
 == Overview
@@ -129,14 +139,14 @@ For `RV32D`, all D-extension instructions which are implemented with `Zfinx` wil
 
 The register pairs are _only_ used by the floating point arithmetic instructions. All integer loads and stores will only access `XLEN` bits, not `FLEN`.
 
-Note:
+[Note]
 
 . *Zp64* from the P-extension specifies consistent register pair handling.
 . Big endian mode is enabled in M-mode if `mstatus.MBE`=1, in S-mode if `mstatus.SBE`=1, or in U-mode if `mstatus.UBE`=1
 
 
 [[x0-register-target]]
-= x0 register target
+== x0 register target
 
 If a floating point instruction targets x0 then it will still execute, and will set any required flags in `fcsr`. It will not write to a target register. This matches the non-`Zfinx` behaviour for
 
@@ -149,7 +159,7 @@ If `fcsr.RM` is in an illegal state then floating point instruction behaviour is
 In the case of `RV32D Zfinx`, register pairs are used. See above for x0 handling.
 
 [[nan-boxing]]
-= NaN-boxing
+== NaN-boxing
 
 For `Zfinx` the NaN-boxing is limited to `XLEN` bits, not `FLEN` bits. Therefore a `FADD.S` executed on an `RV64D` core will write a 64-bit value (the MSH will be all 1’s). On an `RV32D Zfinx` core it will write a 32-bit register, i.e. a single X register only. This means there is semantic difference between these code sequences:
 
@@ -219,7 +229,7 @@ special handling Xreg={0, 1}
 Therefore, for example, if an `FADD.S` instruction is issued on an `RV64F` core then the upper 32-bits will be set to one in the target integer register, or an `FADD.H` (floating point add half-word) instruction will set the upper 48-bits to one.
 
 [[assembly-syntax-and-code-porting]]
-= Assembly Syntax and Code Porting
+== Assembly Syntax and Code Porting
 
 Any references to `F` registers, or removed instructions will cause assembler errors.
 
@@ -241,7 +251,7 @@ on a `Zfinx` core.
 _We considered allowing pseudo-instructions for the deleted instructions for easier code porting. For example allowing FLW to be a pseudo-instruction for LW, but decided not to. Because the register specifiers must change to integer registers, it makes sense to also remove the use of FLW etc. In this way the user is forced to rewrite their code for a `Zfinx` core, reducing the chance of undiscovered porting bugs. This only affects assembly code, high level language code is unaffected as the compiler will target the correct architecture._
 
 [[replaced-instructions]]
-= Replaced Instructions
+== Replaced Instructions
 
 All floating point loads, stores and floating point to integer moves are removed on a `Zfinx` core. The following three tables give suggested replacements.
 
@@ -330,31 +340,8 @@ is replaced by
 
 `PACK a0, a1, a2`
 
-[[heading]]
-= Emulation
-
-A non-`Zfinx` core can run a `Zfinx` binary. M-mode software can do this:
-
-. Set `mstatus.fs`=0 to cause every floating point instruction to trap
-. When a floating point instruction traps, move the source operands from the X registers to the equivalent F registers (i.e. the same register numbers)
-. Set `mstatus.fs` to be non-zero
-. Execute the original instruction which caused the trap
-. Move the result from the destination `F` register to the `X` register / `X` register pair (For `RV32D`)
-. Set `mstatus.fs`=0
-. `MRET`
-
-There are corner cases around the use of x0 and register pairs for `RV32D`
-
-. Two 32-bit `X` registers must be transferred to a single 64-bit F register to set up the source operands. This must be done by saving each `X` register to consecutive memory locations, and using a 64-bit floating point load (`FLD` or `C.FLD`) to load the data
-. One 64-bit F register must be transferred to two 32-bit `X` registers to receive the result. This must be done with a 64-bit floating point store (`FSD` or `C.FSD`) and then two 32-bit loads (such as `LW` or `C.LW`).
-. If the source register pair is {x1,x0}, the source data will read as all zeroes. Therefore f0 must be loaded with a 64-bit zero constant from memory.
-. If the destination register pair is {x1,x0} then the full output is discarded, do not transfer the resulting data to the {x1,x0} register pair which would result in the upper half being written to x1
-
-A `Zfinx` core cannot trap on floating point instructions by setting `mstatus.fs`=0, so the reverse emulation isn’t possible. The code must be recompiled (or ported for assembler).
-
-
 [[abi]]
-= ABI
+== ABI
 
 For details of the current calling conventions see:
 
@@ -367,7 +354,7 @@ The ABI when using `Zfinx` must be one of the the standard integer calling conve
 - lp64
 
 [[fp_configs]]
-= Floating Point Configurations To Reduce Area
+== Floating Point Configurations To Reduce Area
 
 To reduce the area overhead of FPU hardware new configurations will make the `F[N]MADD.\*, F[N]MSUB.*` and `FDIV.\*, FSQRT.*`` instructions optional in hardware. This then gives the choice of implementing them in software instead by:
 
@@ -412,7 +399,7 @@ The options are designed to be additive, none of them remove instructions.
 
 
 [[rationale]]
-= Rationale, why implement Zfinx?
+== Rationale, why implement Zfinx?
 
 Small embedded cores which need to implement floating point extensions have some options:
 
