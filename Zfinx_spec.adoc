@@ -353,6 +353,14 @@ The ABI when using `Zfinx` must be one of the the standard integer calling conve
 - ilp32
 - lp64
 
+[NOTE]
+
+  Currently the ELF header is using a temporary flag to denote Zfinx so that the disassembler knows whether to decode e.g. FADD.S x0, x1, x2 or FADD.S f0, f1, f2
+  
+[NOTE]
+
+  There is a discussion underway about whether RV32D / RV64Q would benefit from an improved ABI
+
 [[fp_configs]]
 == Floating Point Configurations To Reduce Area
 
