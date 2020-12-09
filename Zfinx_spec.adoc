@@ -359,7 +359,7 @@ The ABI when using `Zfinx` must be one of the the standard integer calling conve
   
 [NOTE]
 
-  There is a discussion underway about whether RV32D / RV64Q would benefit from an improved ABI
+  There is a discussion underway about whether RV32D / RV64Q would benefit from an improved ABI. See this thread: https://lists.riscv.org/g/tech-code-size/topic/zfinx_compiler_tools_status/78705569?p=,,,20,0,0,0::recentpostdate%2Fsticky,,,20,2,0,78705569 and this thread: https://lists.riscv.org/g/tech-toolchain-runtime/topic/elf_file_format_and_abis/78806208?p=,,,20,0,0,0::recentpostdate%2Fsticky,,,20,2,0,78806208
 
 [[fp_configs]]
 == Floating Point Configurations To Reduce Area
