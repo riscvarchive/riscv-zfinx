@@ -257,6 +257,8 @@ _We considered allowing pseudo-instructions for the deleted instructions for eas
 == Replaced Instructions
 
 All floating point loads, stores and floating point to integer moves are removed on a `Zfinx` core. The following three tables give suggested replacements.
+[NOTE]
+  The replacement sequences include NaN-boxing in software to give the same semantics as the replaced instructions. The compiler should *not* NaN-box in software as there is no reason to do so. Assembly writers can choose whether to NaN-box in software to give better error detection.
 
 [load-replacements]
 .replacements for floating point load instructions
