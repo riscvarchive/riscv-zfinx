@@ -129,10 +129,9 @@ For `RV32D`, all D-extension instructions that are implemented with `Zfinx` will
 
 . The specified register must be even, odd registers will cause an illegal instruction exception.
 . Even registers will cause an even/odd pair to be accessed.
-.. Accessing Xn will cause the {Xn+1, Xn} pair to be accessed. For example if n = 2:
-... X2 is the least significant half (bits [31:0]) for little endian mode
-... X3 the most significant half (bits [63:32]) for little endian mode
-.. For big endian mode the register mapping is reversed, so X2 is the most significant half, and X3 is the least significant half.
+.. Accessing Xn will cause the {Xn+1, Xn} pair to be accessed, which is consistent for big and little endian modes. For example if n = 2:
+... X2 is the least significant half (bits [31:0])
+... X3 the most significant half (bits [63:32])
 . X0 has special handling:
 .. Reading {X1, X0} will read all zeros.
 .. Writing {X1, X0} will discard the entire result, it will not write to X1.
@@ -141,7 +140,11 @@ The register pairs are _only_ used by the floating point arithmetic instructions
 
 [NOTE]
 
-  *Zp64* from the P-extension specifies consistent register pair handling.
+  *Zp64* from the P-extension will specify consistent register pair handling, but at the time of writing swaps the registers in the pair in big endian mode.
+  
+[NOTE]
+
+  The decision was taken not to swap the order of registers in the pair for big endian mode to reduce read-muxing in the register file, or in the ALU. If big-endian pair swapping is required it will need to be done in software or by a future load-pair instruction.
   
 [NOTE]
 
