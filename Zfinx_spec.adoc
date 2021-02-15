@@ -214,22 +214,13 @@ The table shows the effect of writing each possible width of value to the regist
 |64 |32 |{32{1’b1}, result[31:0]}
 |32 |32 |result[31:0]
 |64 |64 |result[63:0]
-3+|Little endian
+3+|Little or big endian
 |32 |64 a|
 EvenXreg: result[31:0]
 
 Odd Xreg: result[63:32]
 
 special handling Xreg={0, 1}
-
-3+|Big endian
-|32 |64 a|
-Odd Xreg: result[31:0]
-
-EvenXreg: result[63:32]
-
-special handling Xreg={0, 1}
-
 |=======================================================================
 
 Therefore, for example, if an `FADD.S` instruction is issued on an `RV64F` core then the upper 32-bits will be set to one in the target integer register, or an `FADD.H` (floating point add half-word) instruction will set the upper 48-bits to one.
