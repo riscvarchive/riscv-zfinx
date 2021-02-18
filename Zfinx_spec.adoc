@@ -299,8 +299,8 @@ on a `Zfinx` core.
 
 _We considered allowing pseudo-instructions for the deleted instructions for easier code porting. For example allowing FLW to be a pseudo-instruction for LW, but decided not to. Because the register specifiers must change to integer registers, it makes sense to also remove the use of FLW etc. In this way the user is forced to rewrite their code for a `Zfinx` core, reducing the chance of undiscovered porting bugs. This only affects assembly code, high level language code is unaffected as the compiler will target the correct architecture._
 
-[[replaced-instructions]]
-== Replaced Instructions
+[[replaced-instructions-FDZfh]]
+== Replaced Instructions for the F, D, Zfh extensions
 
 All floating point loads, stores and floating point to integer moves are removed on a `Zfinx` core. The following three tables give suggested replacements.
 [NOTE]
@@ -394,6 +394,42 @@ is replaced by:
 `C.ADDI a2, zero, -1`
 
 `PACK a0, a1, a2`
+
+[[vector]]
+== Impact on the V extension
+
+=== Replacement instructions
+
+The following instructions are deleted, and the integer version is to be used instead.
+
+[vec-replacements]
+.replacements for scalar floating point instructions
+[width=100%,options="header",]
+|=================================
+|*Instruction* |*Integer version*
+|vfmv.v.f | vmv.v.x
+|vfmv.f.s | vmv.x.s
+|vfmv.s.f | vmv.s.x
+|vfmerge.vfm | vmerge.vxm
+|=================================
+
+=== Modified instructions
+
+The following instructions will take rs1 from an `X` register instead of from an `F` register.
+
+- vmfeq.vf vd, vs2, rs1, vm # vector-scalar
+- vmfne.vf vd, vs2, rs1, vm # vector-scalar
+- vmflt.vv vd, vs2, vs1, vm # Vector-vector
+- vmflt.vf vd, vs2, rs1, vm # vector-scalar
+- vmfle.vv vd, vs2, vs1, vm # Vector-vector
+- vmfle.vf vd, vs2, rs1, vm # vector-scalar
+- vmfgt.vf vd, vs2, rs1, vm # vector-scalar
+- vmfge.vf vd, vs2, rs1, vm # vector-scalar
+- vfmin.vf vd, vs2, rs1, vm # vector-scalar
+- vfmax.vf vd, vs2, rs1, vm # vector-scalar
+- vfsgnj.vf vd, vs2, rs1, vm # vector-scalar
+- vfsgnjn.vf vd, vs2, rs1, vm # vector-scalar
+- vfsgnjx.vf vd, vs2, rs1, vm # vector-scalar
 
 [[gdb]]
 == GDB
