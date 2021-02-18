@@ -17,7 +17,7 @@ Version 0.1
 
 `Zfinx` is a change to the RISC-V architecture that reuses the integer register file for all floating point instructions. It gives an area saving, and also faster context switching as there are fewer registers to save and restore.
 
-`Zfinx` changes all existing and future floating point extensions that use the `F` floating point registers, so that instead they use the `X` registers. Hence the name `F-in-X`. This does not affect floating point instructions that are implemented as part of the Vector (`v`) extension. `Zfinx` additionally removes all:
+`Zfinx` changes all existing and future floating point extensions that use the `F` floating point registers, so that instead they use the `X` registers. Hence the name `F-in-X`. `Zfinx` additionally removes all:
 
 * floating point load instructions (e.g. `FLW`)
 * floating point store instructions (e.g. `FSW`)
@@ -208,22 +208,74 @@ The table shows the effect of writing each possible width of value to the regist
 .NaN-boxing for supports configurations
 [width=100%,options="header",]
 |=======================================================================
-|XLEN |Width of write to Xreg from FP instruction |Value written to Xreg
-|64 |16 |{48{1’b1}, result[15:0]}
-|32 |16 |{16{1’b1}, result[15:0]}
-|64 |32 |{32{1’b1}, result[31:0]}
-|32 |32 |result[31:0]
-|64 |64 |result[63:0]
-3+|Little or big endian
-|32 |64 a|
+|XLEN |FP output width 2+|Xreg writeback value
+2+| | functional description | implementation
+|64 |16 |NaN_box_to_XLEN(result[15:0]) | {48{1’b1}, result[15:0]}
+|32 |16 |NaN_box_to_XLEN(result[15:0]) | {16{1’b1}, result[15:0]}
+|64 |32 |NaN_box_to_XLEN(result[31:0]) | {32{1’b1}, result[31:0]}
+|32 |32 |NaN_box_to_XLEN(result[31:0]) | result[31:0]
+|64 |64 |NaN_box_to_XLEN(result[63:0]) | result[63:0]
+4+|Little or big endian (special handling Xreg={0, 1})
+|32 |64 |
+EvenXreg: NaN_box_to_XLEN(result[31:0])
+
+OddXreg: NaN_box_to_XLEN(result[63:32]) |
+
 EvenXreg: result[31:0]
 
-Odd Xreg: result[63:32]
+OddXreg: result[63:32]
 
-special handling Xreg={0, 1}
 |=======================================================================
 
 Therefore, for example, if an `FADD.S` instruction is issued on an `RV64F` core then the upper 32-bits will be set to one in the target integer register, or an `FADD.H` (floating point add half-word) instruction will set the upper 48-bits to one.
+
+=== `misa.mxl`
+
+`misa.mxl` can be programmed to change the current value of `XLEN`.
+
+The combination of `Zfinx` and programming `misa.mxl` to _reduce_ `XLEN` from the maximum implemented value gives addition cases to consider as shown in the table.
+
+The result from the floating point instruction is NaN-boxed to the _current_ value of `XLEN`, and then sign extended to the _maximum_ value of `XLEN`. 
+
+[misa-mxl-nan-boxing]
+.NaN-boxing for supports configurations with varying `misa.mxl`
+[width=100%,options="header",]
+|=======================================================================
+2+|XLEN |FP output width 2+|Xreg writeback value
+|maximum|misa.mxl| | functional description | implementation
+|128|64   |16 |SignExt_to_128(NaN_box_to_64(result[15:0])) |{112{1’b1}, result[15:0]}
+|128|32   |16 |SignExt_to_128(NaN_box_to_32(result[15:0])) |{112{1’b1}, result[15:0]}
+| 64|32   |16 |SignExt_to_64(NaN_box_to_32(result[15:0]))  |{48{1’b1}, result[15:0]}
+|128|64   |32 |SignExt_to_128(NaN_box_to_64(result[31:0])) |{96{1’b1}, result[31:0]}
+|128|32   |32 |SignExt_to_128(result[31:0]) |{96{result[31]}, result[31:0]}
+| 64|32   |32 |SignExt_to_64(result[31:0])  |{32{result[31]}, result[31:0]}
+|128|64   |64 |SignExt_to_128(result[63:0]) |(64{result[63]}, result[63:0]}
+5+|Little or big endian (special handling Xreg={0, 1})
+|128|32 |64 | 
+EvenXreg: SignExt_to_128(result[31:0])
+
+OddXreg: SignExt_to_128(result[63:32])
+
+|
+EvenXreg: {96{result[31]}, result[31:0]}
+
+OddXreg: {96{result[63]}, result[63:32]}
+
+
+|64|32 |64 | 
+EvenXreg: SignExt_to_64(result[31:0])
+
+OddXreg: SignExt_to_64(result[63:32])
+
+|
+EvenXreg: {32{result[31]}, result[31:0]}
+
+OddXreg: {32{result[63]}, result[63:32]}
+
+
+|=======================================================================
+
+
 
 [[assembly-syntax-and-code-porting]]
 == Assembly Syntax and Code Porting
