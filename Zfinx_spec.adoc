@@ -411,7 +411,7 @@ The following instructions are deleted, and the integer version is to be used in
 |vfmerge.vfm | vmerge.vxm
 |=================================
 
-Additionally, all instructions with `funct3=OPFVF` take the source from an `X` register instead of an `F` register.
+Additionally, all instructions with `funct3=OPFVF` take the scalar floating point source from either a single or pair of `X` registers instead of a single `F` register.
 
 [[gdb]]
 == GDB
