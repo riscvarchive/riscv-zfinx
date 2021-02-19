@@ -398,8 +398,6 @@ is replaced by:
 [[vector]]
 == Impact on the V extension
 
-=== Replacement instructions
-
 The following instructions are deleted, and the integer version is to be used instead.
 
 [vec-replacements]
@@ -413,23 +411,7 @@ The following instructions are deleted, and the integer version is to be used in
 |vfmerge.vfm | vmerge.vxm
 |=================================
 
-=== Modified instructions
-
-The following instructions will take rs1 from an `X` register instead of from an `F` register.
-
-- vmfeq.vf vd, vs2, rs1, vm # vector-scalar
-- vmfne.vf vd, vs2, rs1, vm # vector-scalar
-- vmflt.vv vd, vs2, vs1, vm # Vector-vector
-- vmflt.vf vd, vs2, rs1, vm # vector-scalar
-- vmfle.vv vd, vs2, vs1, vm # Vector-vector
-- vmfle.vf vd, vs2, rs1, vm # vector-scalar
-- vmfgt.vf vd, vs2, rs1, vm # vector-scalar
-- vmfge.vf vd, vs2, rs1, vm # vector-scalar
-- vfmin.vf vd, vs2, rs1, vm # vector-scalar
-- vfmax.vf vd, vs2, rs1, vm # vector-scalar
-- vfsgnj.vf vd, vs2, rs1, vm # vector-scalar
-- vfsgnjn.vf vd, vs2, rs1, vm # vector-scalar
-- vfsgnjx.vf vd, vs2, rs1, vm # vector-scalar
+Additionally, all instructions with `funct3=OPFVF` take the source from an `X` register instead of an `F` register.
 
 [[gdb]]
 == GDB
