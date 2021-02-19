@@ -7,3 +7,6 @@ The spec is [here](https://github.com/riscv/riscv-zfinx/blob/master/Zfinx_spec.a
 
 The GCC branch is [here](https://github.com/pz9115/riscv-binutils-gdb/commit/bc7715694e2b97ba55791e8ef7409377bd7fb1f)
 
+The current status of the TG and supporting tools is [here](https://wiki.riscv.org/display/TECH/Zfinx+TG)
+
+
