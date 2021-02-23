@@ -1,7 +1,7 @@
 
 [[Title]]
-= `ZFinx` Specification
-Version 0.1
+= `ZFinx` Specification v0.40
+Version 0.40
 :doctype: book
 :encoding: utf-8
 :lang: en
