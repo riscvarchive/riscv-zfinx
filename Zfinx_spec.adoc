@@ -1,7 +1,7 @@
 
 [[Title]]
-= `ZFinx` Specification v0.40
-Version 0.40
+= `ZFinx` Specification v0.41
+Version 0.41
 :doctype: book
 :encoding: utf-8
 :lang: en
@@ -11,6 +11,14 @@ Version 0.40
 :xrefstyle: short
 :le: &#8804;
 :rarr: &#8658;
+
+== Spec update history
+
+|===================================================================
+| version | change
+| 0.41    | change misa.F to be hardwired to zero, note that we are waiting for a standard CSR discovery mechanism
+|===================================================================
+
 
 [[Heading]]
 == Overview
@@ -120,8 +128,8 @@ So software can use this to choose between `ZFinx` or normal versions of floatin
 Privileged code can detect whether any `ZFinx` extension is implemented by checking if:
 
 * `mstatus.FS` is hardwired to zero, and
-* `misa.F` is 1 at reset, or is writeable
-
+* `misa.F` is hardwired to zero, and
+* _CSR indicating `Z[FDQ]inx has yet to be specified, I'm waiting for a standard approach for extensions_
 
 Non-privileged code can detect whether `ZFinx` is implemented as follows:
 
