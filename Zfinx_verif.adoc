@@ -1,0 +1,107 @@
+= Zfinx verification
+
+This document shows how to convert from tests for the `F, D` extensions to tests for `Z[FD]inx`
+
+The same principles apply to any floating point extension.
+
+== NaN-boxing
+
+If the instruction issued reads narrower source operands than `FLEN` there there is no NaN-boxing check.
+
+For the cases covered by this document, then there is no NaN-boxing check for `F*.S` instructions issued on a `ZDinx` core.
+
+This gives a difference in behaviour compared to a `RV32D/RV64D` core.
+
+[source,sourceCode,text]
+----
+
+RV32D/RV64D:
+
+//+1 correctly NaN-boxed
+f2 = 0xffffffff3f800000
+f3 = 0xffffffff3f800000
+
+FADD.S f4, f3, f2
+
+//returns the value 2, NaN-boxed
+f4 = 0xffffffff40000000
+
+//+1 incorrectly NaN-boxed
+f2 = 0x000000003f800000
+f3 = 0x000000003f800000
+
+FADD.S f4, f3, f2
+
+//returns the value sNaN, NaN-boxed
+f4 = 0xffffffff7fc00000
+
+----
+
+The behaviour for `RV32_ZDinx` is as follows.
+
+
+[source,sourceCode,text]
+----
+
+RV32_ZDinx:
+
+//+1 correctly NaN-boxed
+x2 = 0x3f800000
+x3 = 0xffffffff // this register is not read
+x4 = 0x3f800000
+x5 = 0xffffffff // this register is not read
+
+FADD.S x6, x2, x4
+
+//returns the value 2, not NaN-boxed
+x6 = 0x40000000
+
+//+1 incorrectly NaN-boxed
+x2 = 0x3f800000
+x3 = 0x00000000
+x4 = 0x3f800000
+x5 = 0x00000000
+
+FADD.S x6, x2, x4
+
+//returns the value 2, not NaN-boxed - x7 is not written
+x6 = 0x40000000
+
+----
+
+The behaviour for `RV64_ZDinx` is as follows.
+
+[source,sourceCode,text]
+----
+
+RV32_ZDinx:
+
+//+1 correctly NaN-boxed
+x2 = 0xffffffff3f800000
+x3 = 0xffffffff3f800000
+
+FADD.S x4, x2, x3
+
+//returns the value 2, NaN-boxed
+x4 = 0xffffffff40000000
+
+//+1 incorrectly NaN-boxed
+x2 = 0x000000003f800000
+x3 = 0x000000003f800000
+
+FADD.S x4, x2, x3
+
+//returns the value 2, NaN-boxed
+x4 = 0xffffffff40000000
+
+----
+
+This behaviour needs checking for all instructions
+
+== X0 handling
+
+== Register Pair handling
+
+== Deleted instructions
+
+
