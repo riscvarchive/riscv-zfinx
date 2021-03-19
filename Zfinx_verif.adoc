@@ -96,12 +96,29 @@ x4 = 0xffffffff40000000
 
 ----
 
-This behaviour needs checking for all instructions
+This behaviour needs checking for all instructions.
+
+[NOTE]
+
+  Incorrect NaN-boxing means that the upper 32-bits are not `0xffffffff`, so different patterns should be checked.
 
 == X0 handling
 
+X0 reads as zero, and so results written to it are discarded. Exceptions are written to `FFLAGS` are still written even if the target is x0.
+
 == Register Pair handling
+
+For `RV32_ZDinx` the source registers are read as register pairs for `F*.D` instructions.
+
+If any register specifiers are odd then take an illegal instruction exception.
+
+If a source/destination are `x0` then the entire 64-bit source is read as zero, and the entire 64-bit destination is discarded - `x1` is neither read nor written.
 
 == Deleted instructions
 
+All deleted instructions cause illegal instruction exceptions - they are shown https://github.com/riscv/riscv-zfinx/blob/master/Zfinx_spec.adoc#F-replacements[here for `F`] and https://github.com/riscv/riscv-zfinx/blob/master/Zfinx_spec.adoc#D-replacements[here for 'D'].
+
+== ZFinx / non-Zfinx
+
+`ZFinx` is a hardcoded architectural choice, it is not prossibel to enable or disable it. Therefore the tests must be generated / assembled / stored separately from the `non-ZFinx` tests.
 
