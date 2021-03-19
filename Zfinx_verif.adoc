@@ -43,7 +43,7 @@ The behaviour for `RV32_ZDinx` is as follows.
 [source,sourceCode,text]
 ----
 
-RV32_ZDinx:
+RV64_ZDinx:
 
 //+1 correctly NaN-boxed
 x2 = 0x3f800000
@@ -116,7 +116,7 @@ If a source/destination are `x0` then the entire 64-bit source is read as zero, 
 
 == Deleted instructions
 
-All deleted instructions cause illegal instruction exceptions - they are shown https://github.com/riscv/riscv-zfinx/blob/master/Zfinx_spec.adoc#F-replacements[here for `F`] and https://github.com/riscv/riscv-zfinx/blob/master/Zfinx_spec.adoc#D-replacements[here for 'D'].
+All deleted instructions cause illegal instruction exceptions - they are shown https://github.com/riscv/riscv-zfinx/blob/master/Zfinx_spec.adoc#F-replacements[here for `F`] and https://github.com/riscv/riscv-zfinx/blob/master/Zfinx_spec.adoc#D-replacements[here for `D`].
 
 == ZFinx / non-Zfinx
 
