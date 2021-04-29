@@ -14,11 +14,11 @@ Version 0.41
 
 == Overview
 
-If `Zfinx` is implemented then _all_ extensions which access `F` state are modified to access `X` register state instead Therefore floating point register state is not implemented, as a result part of the standard extensions ISA becomes redundant so only a subset is implemented.
+If `Zfinx` is implemented then _all_ extensions which access `F` state are modified to access `X` register state instead. Therefore floating point register state is not implemented, as a result part of the standard extensions ISA becomes redundant and so only a subset is implemented.
 
 == Zfinx configurations
 
-All `Zfinx` configurations require the width of the floating point state to be specified by the widest floating point standard extension to be implemented. Therefore in the configuration string, instead of the width of the `F` registers being specified by the `F/D/Q` standard extensions, the equivalent `Zfinx` version is used instead, `ZFinx/ZDinx/ZQinx`. Any additional floating point extensions can be specified after this in the configuration string.
+All `Zfinx` configurations require the width of the floating point state to be specified by the widest floating point standard extension to be implemented. Therefore in the configuration string, instead of the width of the `F` registers being specified by the `F/D/Q` standard extensions, the equivalent `Zfinx` version is used instead, `ZFinx/ZDinx/ZQinx`. Any additional floating point extensions can be specified after this.
 
 The `Zfinx` versions of `F/D/Q` have the same implication rules. Therefore because `D` implies `F`, `ZDinx` implies `ZFinx`. Other extensions using `F` registers may also be implemented such as `Zfh` or `V`. In these cases the width of the floating point state is specified first in the configuration string using `ZFinx/ZDinx/ZQinx` and the additional extension or extensions are specified afterwards. 
 
@@ -63,9 +63,9 @@ Standard floating point extensions check that input data is NaN-boxed when issui
 Any references to `F` registers will cause assembler/disassembler errors. The encodings do not change but the syntax must refer to `x` registers.
 Therefore the same encoding will disassemble as `FMADD.S f1, f2, f3, f4` or `FMADD.S x1, x2, x3, x4` depending on whether the disassembler is for a `non-Zfinx` or `Zfinx` core.
 
-Any instructions removed from the ISA will also cause an assembler/disassembler errors.
+Any instructions removed from the ISA will also cause assembler/disassembler errors.
 
-If any ZFinx extension is specified then the compiler will have the following #define set: `__riscv_zfinx`
+If any `Zfinx` extension is specified then the compiler will have the following #define set: `__riscv_zfinx`
 
 [NOTE]
 
@@ -95,8 +95,8 @@ If `XLEN<FLEN` then `x0` has special handling, see <<regpairs>>.
 
 == Discovery
 
-The standard discovery mechanism for `Zfinx` has yet to be defined.
+The standard discovery mechanism for `Zfinx` has yet to be defined and is currently out of scope of this specification.
 
 == Rationale
 
-`Zfinx` allows small embedded cores to save considerable core area and to still include floating point hardware. Small iterative floating point units can be significantly smaller than the area taken up in on-chip ROM for the floating point software library, and the performance is significantly better. Additionally the `Zfinx` core implementation is simpler, and the context switch time faster as there is less state to save and restore.
+`Zfinx` allows small embedded cores to save considerable core area and to still include floating point hardware. Small iterative floating point units can be significantly smaller than the area taken up in on-chip ROM for the floating point software library, and the performance is significantly better. Additionally the `Zfinx` core implementation is simpler then for a `non-Zfinx` core with an FPU, and the context switch time faster as there is less state to save and restore.
