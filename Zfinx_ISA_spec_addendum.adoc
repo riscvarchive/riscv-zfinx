@@ -19,13 +19,18 @@ Version 0.1
 | 0.10    | initial version
 |===================================================================
 
-
-[[Heading]]
 == Overview
 
 This document gives additional information about `Zfinx` which is not included in the ISA specification.
 
-[[Heading]]
+== Configurations
+
+Each `Z*inx` extension is distinct and maps directly to an existing floating point extension. Once one floating point extension has been mapped to a `Zfinx` version then the `F` registers are not implemented so all must be mapped to a `Zfinx` version.
+
+For example the `Zfinx` version of `RV32IMCD_Zfh` would be `RV32IMC_Zdinx_Zhinx` as `D->Zdinx` and `Zfh->Zhinx`. 
+
+`RV32IMCD_Zhinx` would *not* be legal.
+
 == Discovery
 
 If any `Zfinx` extension is specified then the compiler will have the following *#define* set:
