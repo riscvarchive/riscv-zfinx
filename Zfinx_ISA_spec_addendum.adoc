@@ -104,12 +104,10 @@ The modifications to the ISA of the `F` extension are shown in  <<F-replacements
 |              2+|*replacement to get the same semantics*
 
 |FLW **f**rd, offset(xrs1)   |LW     |LW[U] and NaN-box in software 
-|C.FLW **f**rd, offset(xrs1) |C.LW   |C.LW and NaN-box in software 
-|C.FLWSP **f**rd, uimm(x2)   |C.LWSP |C.LWSP and NaN-box in software 
+|C.FLW[SP] **f**rd, uimm(x2)   |C.LW[SP] |C.LW[SP] and NaN-box in software 
 
 |FSW **f**rd, offset(xrs1)   |SW     |SW 
-|C.FSW **f**rd, offset(xrs1) |C.SW   |C.SW 
-|C.FSWSP **f**rd, uimm(x2)   |C.SWSP |C.SWSP 
+|C.FSW[SP] **f**rd, uimm(x2)   |C.SW[SP] |C.SW[SP] 
 
 |FMV.X.W xrd, **f**rs1 |MV |MV and sign extend in software 
 |FMV.W.X **f**rd, xrs1 |MV |MV and NaN-box in software 
@@ -129,15 +127,14 @@ The modifications to the ISA of the `D` extension are shown in  <<D-replacements
 |              2+|*replacement to get the same semantics*
 
 |FLD **f**rd, offset(xrs1)   |LW,LW  |LD
-|C.FLD **f**rd, offset(xrs1) |C.LW, C.LW   |C.LD
-|C.FLDSP **f**rd, uimm(x2)   |C.LWSP, C.LWSP |C.LDSP 
+|C.FLD[SP] **f**rd, uimm(x2)   |C.LW[SP], C.LW[SP] |C.LD[SP] 
 
 |FSD **f**rd, offset(xrs1)   |SW,SW         |SD 
 |C.FSD **f**rd, offset(xrs1) |C.SW,C.SW     |C.SD 
-|C.FSDSP **f**rd, uimm(x2)   |C.SWSP,C.SWSP |C.SDSP 
+|C.FSD[SP] **f**rd, uimm(x2)   |C.SW[SP],C.SW[SP] |C.SD[SP]
 
-|FMV.X.D xrd, **f**rs1 |FSGNJ.D |MV 
-|FMV.D.X **f**rd, xrs1 |FSGNJ.D |MV 
+|FMV.X.D xrd, **f**rs1 |FSGNJ.D xrd, xrs1, xrs1 |MV 
+|FMV.D.X **f**rd, xrs1 |FSGNJ.D xrd, xrs1, xrs1 |MV 
 
 |=============================================================================
 
@@ -189,9 +186,7 @@ is replaced by:
 [[vector]]
 == Possible vector version of Zfinx
 
-The potential `Zfinx` version of the vector extension is not included in this specification, it would need to be specified by the Vector TG.
-
-In the potential `Zfinx` version the following instructions would be deleted, and the integer versions would be used instead:
+If the vector TG decide to specify a `Zfinx` version of the vector extension, the following instructions would be deleted, and the integer versions would be used instead:
 
 [vec-replacements]
 .replacements for scalar floating point instructions
@@ -219,11 +214,7 @@ The Zfinx ABI is being defined by the pSABI TG.
 [[fp_configs]]
 == Floating Point Configurations To Reduce Area
 
-To reduce the area overhead of FPU hardware new configurations will make the `F[N]MADD.\*, F[N]MSUB.*` and `FDIV.\*, FSQRT.*`` instructions optional in hardware. This then gives the choice of implementing them in software instead by:
-
-. Taking an illegal instruction trap, and calling the required software routine in the trap handler. This requires that the opcodes are not reallocated and gives binary compatibility between cores with/without hardware support for `F[N]MADD.\*, F[N]MSUB.*` and `FDIV.\*, FSQRT.*`, but is lower performance than option 2.
-
-. Use the GCC options below so that a software library is used to execute them
+To reduce the area overhead of FPU hardware new configurations will make the `F[N]MADD.\*, F[N]MSUB.*` and `FDIV.\*, FSQRT.*`` instructions optional in hardware.
 
 This argument already exists for RISCV:
 
@@ -279,10 +270,10 @@ To achieve this we break all current and future floating point extensions into f
 
 Therefore:
 
-* `RV32F` can be expressed as `rv32_Zfbase_Zfma_Zfdiv_Zfldstmv`.
-* `RV32D` can be expressed as `rv32_Zfbase_Zfma_Zfdiv_fldstmv_Zdbase_Zdma_Zddiv_Zdldstmv`.
-* `RV32_Zfinx` can be expressed as `rv32_Zfbaseinx_Zfmainx_Zfdivinx`.
-* `RV32_Zdinx` can be expressed as `rv32_Zfbaseinx_Zfmainx_Zfdivinx_Zdbaseinx_Zdmainx_Zddivinx`.
+* `RV32F` can be expressed as `RV32_Zfbase_Zfma_Zfdiv_Zfldstmv`.
+* `RV32D` can be expressed as `RV32_Zfbase_Zfma_Zfdiv_fldstmv_Zdbase_Zdma_Zddiv_Zdldstmv`.
+* `RV32_Zfinx` can be expressed as `RV32_Zfbaseinx_Zfmainx_Zfdivinx`.
+* `RV32_Zdinx` can be expressed as `RV32_Zfbaseinx_Zfmainx_Zfdivinx_Zdbaseinx_Zdmainx_Zddivinx`.
 
 If any `-inx` extension is specified, then all extensions from <<fpconfigs>> must have an `-inx` suffix.
 The options are all additive, none of them remove or change instructions.
