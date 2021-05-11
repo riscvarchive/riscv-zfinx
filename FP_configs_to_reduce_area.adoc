@@ -1,0 +1,77 @@
+
+[[Title]]
+= Floating Point Configurations To Reduce Area
+Version 0.1
+:doctype: book
+:encoding: utf-8
+:lang: en
+:toc: left
+:toclevels: 4
+:numbered:
+:xrefstyle: short
+:le: &#8804;
+:rarr: &#8658;
+
+To reduce the area overhead of FPU hardware new configurations will make the `F[N]MADD.\*, F[N]MSUB.*` and `FDIV.\*, FSQRT.*`` instructions optional in hardware.
+
+This argument already exists for RISCV:
+
+`gcc -mno-fdiv`
+
+This argument exists for other architectures (e.g. MIPs) but not for RISCV, so it needs to be added:
+
+`gcc -mno-fused-madd`
+
+To achieve this we break all current and future floating point extensions into four parts: `Z*base`, `Z*ma`, `Z*div` and `Z*ldstmv`. There is an `-inx` version of the first three.
+
+[[fpconfigs]]
+.floating point configurations
+[cols=",",options="header",]
+|============================================================
+|Options       |Meaning
+2+|*base ISA*
+|Zfhbase       |Support half precision base instructions
+|Zfbase        |Support single precision base instructions
+|Zdbase        |Support double precision base instructions
+|Zqbase        |Support quad precision base instructions
+2+|*base ISA-in-x*
+|Zfhbaseinx    |Support Zfinx half precision base instructions
+|Zfbaseinx     |Support Zfinx single precision base instructions
+|Zdbaseinx     |Support Zfinx double precision base instructions
+|Zqbaseinx     |Support Zfinx quad precision base instructions
+2+|*FMA*
+|Zfhma         |Support half precision multiply-add 
+|Zfma          |Support single precision multiply-add 
+|Zdma          |Support double precision multiply-add 
+|Zqma          |Support quad precision multiply-add 
+2+|*FMA-in-x*
+|Zfhmainx      |Support Zfinx half precision multiply-add 
+|Zfmainx       |Support Zfinx single precision multiply-add 
+|Zdmainx       |Support Zfinx double precision multiply-add 
+|Zqmainx       |Support Zfinx quad precision multiply-add 
+2+|*FDIV*
+|Zfhdiv        |Support half precision divide/square-root
+|Zfdiv         |Support single precision divide/square-root
+|Zddiv         |Support double precision divide/square-root
+|Zqdiv         |Support quad precision divide/square-root
+2+|*FDIV-in-x*
+|Zfhdivinx     |Support Zfinx half precision divide/square-root
+|Zfdivinx      |Support Zfinx single precision divide/square-root
+|Zddivinx      |Support Zfinx double precision divide/square-root
+|Zqdivinx      |Support Zfinx quad precision divide/square-root
+2+|*load/store/move, incompatible with -inx options*
+|Zfhldstmv     |Support load,store and integer to/from FP move 
+|Zfldstmv      |Support load,store and integer to/from FP move 
+|Zdldstmv      |Support load,store and integer to/from FP move 
+|Zqldstmv      |Support load,store and integer to/from FP move 
+|============================================================
+
+Therefore:
+
+* `RV32F` can be expressed as `RV32_Zfbase_Zfma_Zfdiv_Zfldstmv`.
+* `RV32D` can be expressed as `RV32_Zfbase_Zfma_Zfdiv_fldstmv_Zdbase_Zdma_Zddiv_Zdldstmv`.
+* `RV32_Zfinx` can be expressed as `RV32_Zfbaseinx_Zfmainx_Zfdivinx`.
+* `RV32_Zdinx` can be expressed as `RV32_Zfbaseinx_Zfmainx_Zfdivinx_Zdbaseinx_Zdmainx_Zddivinx`.
+
+If any `-inx` extension is specified, then all extensions from <<fpconfigs>> must have an `-inx` suffix.
+The options are all additive, none of them remove or change instructions.
