@@ -1,6 +1,6 @@
 
 [[Title]]
-= `ZFinx` Specification v0.41
+= `ZFinx` Specification v0.41 https://github.com/riscv/riscv-zfinx/blob/master/zfinx-spec-20210511-0.41.pdf[DEPRECATED - SEE THIS DOCUMENT INSTEAD]
 Version 0.41
 :doctype: book
 :encoding: utf-8
@@ -11,6 +11,8 @@ Version 0.41
 :xrefstyle: short
 :le: &#8804;
 :rarr: &#8658;
+
+
 
 == Spec update history
 
