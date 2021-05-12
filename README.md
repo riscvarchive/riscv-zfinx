@@ -2,12 +2,28 @@
 
 This repository is for the specification for the Zfinx RISC-V extension.
 
-The proposed chapter for the unprivileged ISA manual is [here](https://github.com/riscv/riscv-zfinx/blob/master/zfinx-spec-20210511-0.41.pdf)
+## Specification links
 
-Additional information about Zfinx is [here](https://github.com/riscv/riscv-zfinx/blob/master/Zfinx_ISA_spec_addendum.adoc)
+[ISA spec](https://github.com/riscv/riscv-zfinx/blob/master/zfinx-spec-20210511-0.41.pdf)
 
-The GCC branch is [here](https://github.com/pz9115/riscv-binutils-gdb/commit/bc7715694e2b97ba55791e8ef7409377bd7fb1f)
+[Extra Zfinx info](https://github.com/riscv/riscv-zfinx/blob/master/Zfinx_ISA_spec_addendum.adoc)
 
-The current status of the TG and supporting tools is [here](https://wiki.riscv.org/display/TECH/Zfinx+TG)
+## Tool links
+
+[riscvOVPsimPlus](https://www.ovpworld.org/riscvOVPsimPlus/)
+
+[GCC](https://github.com/pz9115/riscv-gcc/tree/riscv-gcc-10.2.0-zfinx)
+
+[Binutils](https://github.com/pz9115/riscv-binutils-gdb/tree/riscv-binutils-2.35-zfinx)
+
+[LLVM](https://reviews.llvm.org/D93298)
+
+[QEMU](https://github.com/plctlab/plct-qemu/tree/plct-zfinx-dev)
+
+[Spike](https://github.com/plctlab/plct-spike.git)
+
+## TG status Wiki
+
+[Wiki](https://wiki.riscv.org/display/TECH/Zfinx+TG)
 
 
