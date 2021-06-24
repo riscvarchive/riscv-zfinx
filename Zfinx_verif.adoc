@@ -1,6 +1,6 @@
 = Zfinx verification
 
-This document shows how to convert from tests for the `F, D` extensions to tests for `Z[FD]inx`
+This document shows how to convert from tests for the `F, D` extensions to tests for `Z[fd]inx`
 
 The same principles apply to any floating point extension.
 
@@ -8,7 +8,7 @@ The same principles apply to any floating point extension.
 
 If the instruction issued reads narrower source operands than `FLEN` there there is no NaN-boxing check.
 
-For the cases covered by this document, then there is no NaN-boxing check for `F*.S` instructions issued on a `ZDinx` core.
+For the cases covered by this document, then there is no NaN-boxing check for `F*.S` instructions issued on a `Zdinx` core.
 
 This gives a difference in behaviour compared to a `RV32D/RV64D` core.
 
@@ -37,13 +37,13 @@ f4 = 0xffffffff7fc00000
 
 ----
 
-The behaviour for `RV32_ZDinx` is as follows.
+The behaviour for `RV32_Zdinx` is as follows.
 
 
 [source,sourceCode,text]
 ----
 
-RV64_ZDinx:
+RV64_Zdinx:
 
 //+1 correctly NaN-boxed
 x2 = 0x3f800000
@@ -69,12 +69,12 @@ x6 = 0x40000000
 
 ----
 
-The behaviour for `RV64_ZDinx` is as follows.
+The behaviour for `RV64_Zdinx` is as follows.
 
 [source,sourceCode,text]
 ----
 
-RV32_ZDinx:
+RV32_Zdinx:
 
 //+1 correctly NaN-boxed
 x2 = 0xffffffff3f800000
@@ -108,7 +108,7 @@ X0 reads as zero, and so results written to it are discarded. Exceptions are wri
 
 == Register Pair handling
 
-For `RV32_ZDinx` the source registers are read as register pairs for `F*.D` instructions.
+For `RV32_Zdinx` the source registers are read as register pairs for `F*.D` instructions.
 
 If any register specifiers are odd then take an illegal instruction exception.
 
@@ -118,7 +118,7 @@ If a source/destination are `x0` then the entire 64-bit source is read as zero, 
 
 All deleted instructions cause illegal instruction exceptions - they are shown https://github.com/riscv/riscv-zfinx/blob/master/Zfinx_spec.adoc#F-replacements[here for `F`] and https://github.com/riscv/riscv-zfinx/blob/master/Zfinx_spec.adoc#D-replacements[here for `D`].
 
-== ZFinx / non-Zfinx
+== Zfinx / non-Zfinx
 
-`ZFinx` is a hardcoded architectural choice, it is not prossibel to enable or disable it. Therefore the tests must be generated / assembled / stored separately from the `non-ZFinx` tests.
+`Zfinx` is a hardcoded architectural choice, it is not possible to enable or disable it. Therefore the tests must be generated / assembled / stored separately from the `non-Zfinx` tests.
 
