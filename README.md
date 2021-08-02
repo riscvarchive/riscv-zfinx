@@ -6,6 +6,8 @@ This repository is for the specification for the Zfinx RISC-V extension.
 
 [ISA spec](https://github.com/riscv/riscv-zfinx/blob/main/zfinx-20210630.pdf)
 
+[LaTex source for the ISA spec](https://github.com/riscv/riscv-isa-manual/blob/zfinx/src/zfinx.tex)
+
 [Extra Zfinx info](https://github.com/riscv/riscv-zfinx/blob/master/Zfinx_ISA_spec_addendum.adoc)
 
 ## Tool links
