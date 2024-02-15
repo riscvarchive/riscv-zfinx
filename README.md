@@ -1,4 +1,5 @@
-https://img.shields.io/badge/Extension_Integrated-green?style=flat&color=%2308C10A&link=https%3A%2F%2Fgithub.com%2Friscv%2Friscv-isa-manual
+
+![Static Badge](https://img.shields.io/badge/Extension_Integrated-green?style=flat&color=%2308C10A&link=https%3A%2F%2Fgithub.com%2Friscv%2Friscv-isa-manual)
 
 # riscv-zfinx
 
