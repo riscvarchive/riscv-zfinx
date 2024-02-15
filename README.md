@@ -1,5 +1,7 @@
 
-![Static Badge](https://img.shields.io/badge/Extension_Integrated-green?style=flat&color=%2308C10A&link=https://github.com/riscv/riscv-isa-manual/blob/fd66563aef9675a42e17a9cf3ef5a67d49a285b0/src/zfinx.adoc#L37)
+![Static Badge](https://img.shields.io/badge/Extension_Integrated-green?style=flat&color=%2308C10A&)
+
+This extension has been integrated into the ISA documentation, which is available [here](https://github.com/riscv/riscv-isa-manual).
 
 # riscv-zfinx
 
