@@ -1,3 +1,5 @@
+https://img.shields.io/badge/Extension_Integrated-green?style=flat&color=%2308C10A&link=https%3A%2F%2Fgithub.com%2Friscv%2Friscv-isa-manual
+
 # riscv-zfinx
 
 This repository is for the specification for the Zfinx RISC-V extension.
